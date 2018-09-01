@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <title>The Dollar Game</title>
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    #network {
+      width: 80%;
+      height: 100vh;
+      float: left;
+    }
+    #updateVal {
+      width: 20%;
+      height: 100vh;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+
+<div id="network"></div>
+<div id="updateVal">
+        <h2>Moves:<div id="moves">0</div></h2>
+        <button onclick="refreshMoves()">Refresh</button>
+        <br/>
+        <br/>
+        Update Value of Selected Node
+        <input name="value" type="number" id="updateNumber"/>
+        <br/> 
+        <button onclick="updateNode()">Update</button>
+        <br/> 
+</div>
+
+<script type="text/javascript">
+    // create an array with nodes
+    var nodes = new vis.DataSet([
+        {id: 1, label: '-2'},
+        {id: 2, label: '3'},
+        {id: 3, label: '1'},
+        {id: 4, label: '-1'},
+        {id: 5, label: '2'}
+    ]);
+
+    // create an array with edges
+    var edges = new vis.DataSet([
+        {from: 1, to: 3},
+        {from: 1, to: 2},
+        {from: 1, to: 4},
+        {from: 3, to: 5},
+        {from: 2, to: 3},
+    ]);
+
+    // create a network
+    var container = document.getElementById('network');
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+        manipulation: {
+            enabled: true
+        }
+    };
+    var network = new vis.Network(container, data, options);
+    var moves = 0;
+    network.on("doubleClick", function (params) {
+        params.event = "[original event]";
+        const clickedNode = params.nodes[0];
+        let clickedNodeValue = parseInt(nodes.get(clickedNode).label);
+        moves++;
+        document.getElementById("moves").innerHTML = moves;
+        const connectedNodes = network.getConnectedNodes(clickedNode);
+        clickedNodeValue = clickedNodeValue - connectedNodes.length;
+
+        connectedNodes.forEach(element => {
+            nodes.update({id: element, label: ""+(parseInt(nodes.get(element).label)+1) })
+        });
+        nodes.update({id: clickedNode, label: ""+clickedNodeValue });
+    });
+
+
+    function updateNode() {
+        const val = document.getElementById("updateNumber").value;
+        const selectedNodes = network.getSelectedNodes();
+        selectedNodes.forEach(element => {
+            nodes.update({id: element, label: val })
+        });
+    }
+
+    function refreshMoves(){
+        moves = 0;
+        document.getElementById("moves").innerHTML = moves;
+    }
+
+</script>
+
+
+</body>
+</html>
